@@ -13,13 +13,22 @@ def cp_with_ignore(file_name_ignore, source_dir, target_dir, ignore_path='exps')
 
     # file_names = os.listdir(source_dir)
     if file_name_ignore is not None:
-        with open(file_name_ignore, 'r') as f:
+        with open(file_name_ignore, 'r+') as f:
             ignore_files = f.readlines()
-        ignore_files = [ignore_file.strip('\r').strip('\n') for ignore_file in ignore_files]
-        ignore_files.append('.*')
-        ignore_files.append('exps')
-        if not ignore_path in ignore_files:
-            ignore_files.append(ignore_path)
+            ignore_files = [ignore_file.strip('\r').strip('\n') for ignore_file in ignore_files]
+            ignore_files.append('.*')
+            ignore_files.append('exps')
+            if not ignore_path in ignore_files:
+                ignore_files.append(ignore_path)
+
+                # add current ignore-path into .dfignore
+                f.seek(f.tell()-1, 0)
+                char_last = f.read(1)
+                if char_last == '\n':
+                    f.writelines(ignore_path + '\n')
+                else:
+                    f.writelines('\n' + ignore_path + '\n')
+
     else:
         ignore_files = [ignore_path, '.*', 'exps']
     # print(file_names)
@@ -57,14 +66,21 @@ def main():
                     f.writelines('exps\n')
     else:
         assert args.command is not None, "Command needed. Please refer to help."
+        assert len(args.command) > 0, "Command length 0, please verify your command"
 
-    if args.command is not None:
+    if args.command is not None and len(args.command) > 0:
         now_dir = os.getcwd()
         print('now in dir:{}'.format(now_dir))
 
         ## create some dirs if not exists
         if not os.path.exists(args.exp_dir):
             os.mkdir(args.exp_dir)
+        else:
+            if os.path.exists('.dfignore'):
+                # check & add
+                with open('.dfignore') as f:
+                    ignore_files = f.readlines()
+                    ignore_files = [ignore_file.strip('\r').strip('\n') for ignore_file in ignore_files]
 
         exp_dir = os.path.join(args.exp_dir, args.exp_name)
         if os.path.exists(exp_dir):

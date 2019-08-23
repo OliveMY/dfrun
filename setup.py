@@ -4,7 +4,7 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setup(name='dfrun',
-      version='0.1.2',
+      version='0.1.3',
       packages=['dfrun'],
       author="Rudolfxx",
       author_email="mayeoliver@163.com",
