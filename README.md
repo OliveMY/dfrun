@@ -5,6 +5,9 @@
 
 1. create a folder to copy all the code in the current directory to freeze one training process
 2. switch to the working path to the folder created, and run the command
+3. if gpu resources is needed, nvidia-ml-py package is needed. 
+In python 2.x, `pip install nvidia-ml-py`, while in 
+python 3.x, `pip install nvidia-ml-py3 `
 
 ##### Dependencies:
 
@@ -26,8 +29,8 @@ python setup.py install
 
 ##### Usage:
 
-```python
-dfrun -d [experiment folder] -n [experiment name] [command]
+```bash
+dfrun -d [experiment folder] -n [experiment name] -g [NUMxMEM] [command]
 ```
 
 ##### What does the project folder look like:
