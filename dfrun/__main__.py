@@ -81,19 +81,27 @@ def wait_for_gpus(gpu_args):
     handles = [pynvml.nvmlDeviceGetHandleByIndex(ind) for ind in range(gpus_on_machine)]
     satisfied = False
 
+    CUDA_VISIBLE_DEVICES = 'CUDA_VISIBLE_DEVICES='
     while not satisfied:
         memoinfos = [pynvml.nvmlDeviceGetMemoryInfo(handle) for handle in handles]
-        memo_free = sorted([memo.free >> 30 for memo in memoinfos], reverse=True)  ##  GB unit
-        if memo_free[gpu_num - 1] >= mem_req:
-            ## enough resources
+
+        memo_free = sorted([(memo.free >> 30, ii) for ii, memo in enumerate(memoinfos)],
+                           key=lambda x: x[0],
+                           reverse=True)  ##  GB unit
+
+        if memo_free[gpu_num - 1][0] >= mem_req:
+            devices = [str(tt[1]) for tt in memo_free]
+            CUDA_VISIBLE_DEVICES += ','.join(devices)
             break
         else:
             toc = time.time()
             wait_time = _process_time_str(tic, toc)
+            print(memo_free)
             print('\rwaiting for resources: %d GPUs with %d GB memory. You have been waiting for %s' % (
                 gpu_num, mem_req, wait_time), end='')
             # check every 2.5 seconds
             time.sleep(2.5)
+    return CUDA_VISIBLE_DEVICES
 
 
 def main():
@@ -172,10 +180,12 @@ def main():
         os.chdir(exp_dir)
         print('changed dir to {}'.format(os.getcwd()))
 
+        command_2_run = ''
         # wait for gpu resources
         if args.gpu:
-            wait_for_gpus(args.gpu)
-        command_2_run = " ".join(args.command)
+            cuda_head = wait_for_gpus(args.gpu)
+            command_2_run = cuda_head + ' '
+        command_2_run += " ".join(args.command)
         print('command starting:' + command_2_run)
         ## run target command
         os.system(command_2_run)
