@@ -90,7 +90,7 @@ def wait_for_gpus(gpu_args):
                            reverse=True)  ##  GB unit
 
         if memo_free[gpu_num - 1][0] >= mem_req:
-            devices = [str(tt[1]) for tt in memo_free]
+            devices = [str(tt[1]) for tt in memo_free[:gpu_num]]
             CUDA_VISIBLE_DEVICES += ','.join(devices)
             break
         else:
